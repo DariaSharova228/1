@@ -10,4 +10,4 @@ void multiplication_block(double* A, double* B, double* C, int rows1, int cols1,
 double norm_vector(double* X, int n);
 double discrepancy1(double* A, double* B, double* X, int n);
 double discrepancy2(double* X, int n);
-int solve( double *X, int n);
+int solution( double *X, int n);
