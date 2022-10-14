@@ -69,6 +69,7 @@ void fill_matrix(double* A, int n, int s){
 }
 void initialization_B(double* B, double* A,int n){
     for(int i = 0; i < n; i++) {
+        B[i] = 0. ;
         for(int k = 0; k < n; k += 2){
             B[i] += A[i*n + k]; 
         }
@@ -100,10 +101,16 @@ double discrepancy1(double* A, double* B, double* X, int n){
             sum1 += A[i*n +j] * X[j];
         }
         sum2 += fabs(sum1 - B[i]);
+        sum1 = 0.;
     }
     norm = norm_vector(B,n);
     return (norm > 0 ? (sum2/norm) : 10000);
 }
+/*double discrepancy1(double* A, double* B, double* X, int n){
+    double sum = 0.;
+    int k = n/3;
+
+}*/
 double discrepancy2(double* X, int n) {
     double sum = 0.;
     for(int i = 0; i < n; i++) {
@@ -111,11 +118,11 @@ double discrepancy2(double* X, int n) {
     }
     return sum;
 }
-int solve(double *X, int n){
+int solution(double *X, int n){
   for(int i = 0; i < n; i+=2){
     X[i] = 1;
   }
-  for(int i = 1 ; i < n; i +=2 ) {
+  for(int i = 1; i < n; i +=2 ) {
     X[i] = 0;
   }
   return 1;
