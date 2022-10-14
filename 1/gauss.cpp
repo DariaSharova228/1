@@ -55,20 +55,20 @@ int main(int argc, char *argv[]){
             delete []X;
             return 0;
         }
+        initialization_B(B, A, n);
         fclose(inp);
     }
     else {
         fill_matrix(A, n, s);
         initialization_B(B, A, n);
     }
-    /*printf("A =\n");
+    printf("A =\n");
   print_matrix(A, n, n, r);
-  printf("-----------------------------------------------------\n");
-  printf("B =\n");
-  print_matrix(B, n, 1, r);
-  printf("-----------------------------------------------------\n");*/
+  printf("\n");
+  /*printf("B =\n");
+  print_matrix(B, n, 1, r);*/
     t1 = clock();
-    res = solve(X, n);
+    res = solution(X, n);
     t1 = (clock() - t1)/ CLOCKS_PER_SEC;
     if (res != 1){
         r1 = -1;
