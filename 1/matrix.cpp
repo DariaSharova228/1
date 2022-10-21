@@ -155,12 +155,12 @@ double discrepancy2(double* X, int n) {
     }
     return sum;
 }
-int ind_of_max_block(double matrixnorm, int i, int m, double *block) {
+int ind_of_max_block(int i, int m, double *block) {
     int indmax = -1;
     for(int j = i; j < m; j++) {
-        if (!(fabs(block[j * m + i]) < EPS * matrixnorm)) {
+        if (!(fabs(block[j * m + i]) < EPS )) {
             if (indmax == -1) indmax = j;
-            else indmax = (fabs(block[indmax * m + i]) - fabs(block[j * m + i]) < EPS * matrixnorm ? j : indmax);
+            else indmax = (fabs(block[indmax * m + i]) - fabs(block[j * m + i]) < EPS ? j : indmax);
         }
     }
     return indmax;
@@ -180,13 +180,13 @@ void copy(double* block1, double* block2, int m) {
         }
     }
 }
-int ind_of_min_matrix(int j, double* A, double normmatrix, double* block1, double* block2, double* block3, int n, int m, int k, int l){
+int ind_of_min_matrix(int j, double* A,double* block1, double* block2, double* block3, int n, int m, int k, int l){
     double curr_norm;
     double min_norm = 0.;
     int min_norm_i = -1;
     for(int i = j; i < k; i++) {//цикл для выбора главного элементa
         get_block(i, j, n, m, k, l, A, block1);
-        if(inverse_block(normmatrix, block1, block2, m) == -1){
+        if(inverse_block(block1, block2, m) == -1){
             return -1;
         }
         if(i == j) {
@@ -222,9 +222,9 @@ void change_row_matrix(int i1, int i2, int n, int m, int k, int l, double* A, do
     put_block_b(i2, m, k, l, B, block1); 
     put_block_b(i1, m, k, l, B, block2);
 }
-/*int inverse_block(double normmatrix, double* block, double* inv_block, int m) {
+int inverse_block(double* block, double* inv_block, int m) {
     int indmax;
-    double buf = 0;
+    double c = 0;
     for(int i = 0; i < m; i++) {
         for(int j = 0; j < m; j++) {
             if(i == j) {
@@ -236,12 +236,12 @@ void change_row_matrix(int i1, int i2, int n, int m, int k, int l, double* A, do
         }
     }
     for(int j = 0; j < m; j++) {
-        indmax = ind_of_max_block(normmatrix, j, m, block);
+        indmax = ind_of_max_block(j, m, block);
         if(indmax != j) {
             change_row_block(j, indmax, m, block);
             change_row_block(j, indmax, m, inv_block);
         }
-        if (fabs(block[j * m + j]) < EPS * normmatrix) return -1;
+        if (fabs(block[j * m + j]) < EPS) return -1;
         for(int i = j; i < m; i++) {
             block[j * m + i] = block[j * m + i] / block[j * m + j];
         }
@@ -250,36 +250,37 @@ void change_row_matrix(int i1, int i2, int n, int m, int k, int l, double* A, do
         }
         for(int i = 0; i < m; i++) {
             if (i != j) {
-                buf = block[i * m + j];
+                c = block[i * m + j];
                 for(int j1 = j; j1 < m; j1++) {
-                    block[i * m + j1] -= block[j * m + j1] * buf;
+                    block[i * m + j1] -= block[j * m + j1] * c;
                 }
                 for(int j1 = 0; j1 < m; j1++) {
-                    inv_block[i * m + j1] -= inv_block[j * m + j1] * buf;
+                    inv_block[i * m + j1] -= inv_block[j * m + j1] * c;
                 }
             }
         }
     }
     return 0;
 
-}*/
-int inverse_block(double matrixnorm, double *block, double *block1, int m) {
+}
+/*int inverse_block(double *block, double *block1, int m) {
     int k = 0, i = 0, j = 0;
-    double div = 0, buf = 0;
+    double div = 0;
+    double buf = 0.;
     int indmax = 0;
 
     for(i = 0; i < m * m; i++) block1[i] = 0;
     for(i = 0; i < m; i++) block1[i * m + i] = 1;
 
     for(k = 0; k < m; k++) {
-        indmax = ind_of_max_block(matrixnorm, k, m, block);
+        indmax = ind_of_max_block(k, m, block);
         if (indmax < k) return -1;
         if (indmax > k) {
             change_row_block(k, indmax, m, block);
             change_row_block(k, indmax, m, block1);
         }
 
-        if (fabs(block[k * m + k]) < EPS * matrixnorm) return -1;
+        if (fabs(block[k * m + k]) < EPS) return -1;
         div = 1 / block[k * m + k];
 
         for(i = k; i < m; i++) 
@@ -301,7 +302,7 @@ int inverse_block(double matrixnorm, double *block, double *block1, int m) {
     }
 
     return 1;
-}
+}*/
 
 void mult_blocks(double *block1, double *block2, double *resblock, int n, int m1, int m2) { //block1{m1*m} * block2{m*m2}
     int i = 0, j = 0, k = 0, s = 0, r2 = 0, r3 = 0, l2 = 0, l3 = 0;
@@ -402,9 +403,9 @@ int solution(double* A, double* B, double *X, int n, int m, double* block1, doub
     int l = n - m * k;
     //double curr_norm;
     int min_norm_i;
-    double normmatrix = norm_block(A, n);
+    //double normmatrix = norm_block(A, n);
     for(int p = 0; p < k; p++){//шаг
-    min_norm_i = ind_of_min_matrix(p, A, normmatrix, block1, block2, inv_block, n, m, k, l);
+    min_norm_i = ind_of_min_matrix(p, A, block1, block2, inv_block, n, m, k, l);
     if (min_norm_i == -1) return -1;
     change_row_matrix(p, min_norm_i, n, m, k, l, A, block1, block2, B);
     for(int i1 = p; i1 < k; i1++) {                                
@@ -467,7 +468,7 @@ int solution(double* A, double* B, double *X, int n, int m, double* block1, doub
     }
     if(l != 0) {
         get_block(k, k, n, m, k, l, A, block1);
-        if (inverse_block(normmatrix, block1, inv_block, l) == -1) return -1;
+        if (inverse_block(block1, inv_block, l) == -1) return -1;
         get_block(k, k, n, m, k, l, A, block1); 
         mult_blocks(inv_block, block1, block3, l, l, l);
         put_block(k, k, n, m, k, l, A, block3);
