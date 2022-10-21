@@ -5,6 +5,10 @@ int main(int argc, char *argv[]){
     double* A;
     double* B;
     double* X;
+    double* block1;
+    double* block2;
+    double* block3;
+    double* inv_block;
     int res = 0;
     int n = 0, m = 0, r = 0, s = 0;
     char* name_file;
@@ -65,10 +69,38 @@ int main(int argc, char *argv[]){
     printf("A =\n");
   print_matrix(A, n, n, r);
   printf("\n");
+  printf("B =\n");
+  print_matrix(B, n, 1, r);
+  printf("\n");
+  //int k = n/m;
+  //int l = n - m * k;
+  block1 = new double[m*m];
+  block2 = new double[m*m];
+  block3 = new double[m*m];
+  inv_block = new double [m*m];
+  for(int i = 0; i < n; i++) {
+    X[i] = 0;
+  }
+  /*double normmatrix = norm_block(A, n);
+  get_block(0, 0, n, m, k, l, A, block1);
+  print_block(block1, m, m);
+  printf("\n");
+  inverse_block(normmatrix, block1, block2, m);
+  print_block(block2, m, m);
+  printf("\n");*/
+  /*get_block(0, 0, n, m, k, l, A, block1);
+  print_block(block1, m, m);
+  printf("\n");
+  get_block(1, 0, n, m, k, l, A, block2);
+  print_block(block2, l, m);
+  printf("\n");
+  mult_blocks(block2, block1, block3, m, l, m);
+  print_block(block3, l, m);
+  printf("\n");*/
   /*printf("B =\n");
   print_matrix(B, n, 1, r);*/
     t1 = clock();
-    res = solution(X, n);
+    res = solution(A, B, X, n, m, block1, block2, inv_block, block3);
     t1 = (clock() - t1)/ CLOCKS_PER_SEC;
     if (res != 1){
         r1 = -1;
