@@ -85,8 +85,11 @@ int main(int argc, char *argv[]){
   get_block(0, 0, n, m, k, l, A, block1);
   print_block(block1, m, m);
   printf("\n");
-  inverse_block(normmatrix, block1, block2, m);
-  print_block(block2, m, m);
+  get_block_b(0, m, k, l , B, block2);
+  print_block(block2, m, 1);
+  printf("\n");
+  mult_blocks(block1, block2, block3, m, m, 1);
+  print_block(block3, m, 1);
   printf("\n");*/
   /*get_block(0, 0, n, m, k, l, A, block1);
   print_block(block1, m, m);
@@ -101,6 +104,12 @@ int main(int argc, char *argv[]){
   print_matrix(B, n, 1, r);*/
     t1 = clock();
     res = solution(A, B, X, n, m, block1, block2, inv_block, block3);
+    //printf("A =\n");
+  //print_matrix(A, n, n, r);
+  //printf("\n");
+  //printf("B =\n");
+  //print_matrix(B, n, 1, r);
+  //printf("\n");
     t1 = (clock() - t1)/ CLOCKS_PER_SEC;
     if (res != 1){
         r1 = -1;
@@ -109,9 +118,46 @@ int main(int argc, char *argv[]){
         delete []A;
         delete []B;
         delete []X;
+        delete [] block1;
+        delete [] block2;
+        delete [] block3;
+        delete [] inv_block;
         return 0;
     }
+    printf("X =\n");
     print_matrix(X, n, 1, r);
+    if(s == 0) {
+        name_file = argv[5];
+        inp = fopen(name_file, "r");
+        if(!inp){
+            delete []A;
+            delete []B;
+            delete []X;
+            delete [] block1;
+            delete [] block2;
+            delete [] block3;
+            delete [] inv_block;
+            return 0;
+        }
+        if(read_matrix(inp, A, n) == 0 ) {
+            printf("ошибка в файле с матрицей\n");\
+            fclose(inp);
+            delete []A;
+            delete []B;
+            delete []X;
+            delete [] block1;
+            delete [] block2;
+            delete [] block3;
+            delete [] inv_block;
+            return 0;
+        }
+        initialization_B(B, A, n);
+        fclose(inp);
+    }
+    else {
+        fill_matrix(A, n, s);
+        initialization_B(B, A, n);
+    }
     t2 = clock();
     r1 = discrepancy1(A, B, X, n);
     r2 = discrepancy2(X, n);
@@ -120,5 +166,9 @@ int main(int argc, char *argv[]){
     delete []A;
     delete []B;
     delete []X;
+    delete []block1;
+    delete []block2;
+    delete []block3;
+    delete []inv_block;
     return 0;
 }
