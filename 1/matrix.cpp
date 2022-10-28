@@ -1,5 +1,5 @@
 #include "matrix.h"
-#define EPS 1e-14
+#define EPS 1e-16
 void get_block(int i, int j, int n, int m, int k, int l, double *A, double *block){
     int rows, cols;
     rows = (i == k? l : m);
