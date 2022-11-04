@@ -238,15 +238,14 @@ int ind_of_min_matrix(double normmatrix, int j, double* A,double* block1, double
     int min_norm_i = -1;
     for(int i = j; i < k; i++) {//цикл для выбора главного элементa
         get_block(i, j, n, m, k, l, A, block1);
-        if(inverse_block(normmatrix, block1, block2, m) == -1){
-            return -1;
-        }
-        curr_norm = norm_block(block2,normmatrix, m);
-        if ((fabs(curr_norm) - fabs(min_norm) < EPS * normmatrix) || (min_norm_i == -1)) {
-                min_norm = curr_norm;
-                min_norm_i = i;
-                copy(block3, block2, m);
+        if(inverse_block(normmatrix, block1, block2, m) != -1){
+            curr_norm = norm_block(block2,normmatrix, m);
+            if ((fabs(curr_norm) - fabs(min_norm) < EPS * normmatrix) || (min_norm_i == -1)) {
+                    min_norm = curr_norm;
+                    min_norm_i = i;
+                    copy(block3, block2, m);
             }
+        }
     }
     return min_norm_i;
 
@@ -402,13 +401,13 @@ void substract_block(double *block1, double *block2, int n, int m) {
         for(j = 0; j < m; j++)
             block1[i * m + j] -= block2[i * m + j];    
 }
-void clean_block(double* block, int m) {
+/*void clean_block(double* block, int m) {
     for(int i = 0; i < m; i++) {
         for (int j = 0; j < m; j++) {
             block[i * m + j] = 0.;
         }
     }
-}
+}*/
 /*int solution(double* A, double* B, double* X, int n, int m, double* block1, double* block2, double* inv_block, double* block3) {
     int k = n/m;
     int l = n % m;
@@ -434,22 +433,22 @@ int solution(double* A, double* B, double *X, int n, int m, double* block1, doub
             get_block(p, i1, n, m, k, l, A, block1);    
             mult_blocks(inv_block, block1, block2, m, m, m);
             put_block(p, i1, n, m, k, l, A, block2);
-            clean_block(block1, m);
-            clean_block(block2, m);
+            //clean_block(block1, m);
+            //clean_block(block2, m);
     }
         if (l != 0) { //m x l
             get_block(p, k, n, m, k, l, A, block1);   
             mult_blocks(inv_block, block1, block2, m, m, l);
             put_block(p, k, n, m, k, l, A, block2);
-            clean_block(block1, m);
-            clean_block(block2, m);
+            //clean_block(block1, m);
+            //clean_block(block2, m);
             
         }
         get_block_b(p, m, k, l, B, block1);
         mult_blocks(inv_block, block1, block2, m, m, 1);
         put_block_b(p, m, k, l, B, block2);
-        clean_block(block1, m);
-        clean_block(block2, m);
+        //clean_block(block1, m);
+        //clean_block(block2, m);
         for(int i = p + 1; i < k; i++) {
             get_block(i, p, n, m, k, l, A, block1);
             for(int j = p; j < k; j++) {
@@ -458,8 +457,8 @@ int solution(double* A, double* B, double *X, int n, int m, double* block1, doub
                 get_block(i, j, n, m, k, l, A, block2);
                 substract_block(block2, block3, m, m);
                 put_block(i, j, n, m, k, l, A, block2);
-                clean_block(block2, m);
-                clean_block(block3, m);
+                //clean_block(block2, m);
+                //clean_block(block3, m);
             }
             if(l != 0) { //m*l
                 get_block(p, k, n, m, k, l, A, block2);
@@ -467,19 +466,19 @@ int solution(double* A, double* B, double *X, int n, int m, double* block1, doub
                 get_block(i, k, n, m, k, l, A, block2);
                 substract_block(block2, block3, m, l);
                 put_block(i, k, n, m, k, l, A, block2);
-                clean_block(block2, m);
-                clean_block(block3, m);
+                //clean_block(block2, m);
+                //clean_block(block3, m);
             }
             get_block_b(p, m, k, l, B, block2);
             mult_blocks(block1, block2, block3, m, m, 1);
-            clean_block(block2, m);
+            //clean_block(block2, m);
             get_block_b(i, m, k, l, B, block2);
             substract_block(block2, block3, m, 1);
             put_block_b(i, m, k, l, B, block2);
-            clean_block(block2, m);
-            clean_block(block3, m);
+            //clean_block(block2, m);
+            //clean_block(block3, m);
         }
-        clean_block(block1, m);
+        //clean_block(block1, m);
         if (l > 0) { //l x m
             get_block(k, p, n, m, k, l, A, block1);  // l*m      
             for(int j = p; j < k; j++){
@@ -488,24 +487,24 @@ int solution(double* A, double* B, double *X, int n, int m, double* block1, doub
                 get_block(k, j, n, m, k, l, A, block2);     
                 substract_block(block2, block3, l, m);
                 put_block(k, j, n, m, k, l, A, block2);
-                clean_block(block2, m);
-                clean_block(block3, m);
+                //clean_block(block2, m);
+                //clean_block(block3, m);
             }
             get_block(p, k, n, m, k, l, A, block2);
             mult_blocks(block1, block2, block3, m, l, l);
             get_block(k, k, n, m, k, l, A, block2);        
             substract_block(block2, block3, l, l);
             put_block(k, k, n, m, k, l, A, block2);
-            clean_block(block2, m);
-            clean_block(block3, m);
+           //clean_block(block2, m);
+            //clean_block(block3, m);
             get_block_b(p, m, k, l, B, block2);
             mult_blocks(block1, block2, block3, m, l, 1);
             get_block_b(k, m, k, l, B, block2);
             substract_block(block2, block3, l, 1);
             put_block_b(k, m, k, l, B, block2);
-            clean_block(block2, m);
-            clean_block(block3, m);
-            clean_block(block1, m);
+            //clean_block(block2, m);
+            //clean_block(block3, m);
+            //clean_block(block1, m);
         }
     }
     if(l > 0) {
