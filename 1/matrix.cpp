@@ -110,6 +110,7 @@ void* thread_func(void *ptr) {
     double* block2;
     double* block3;
     double* inv_block;
+    double *inv_block1 = nullptr;
     cpu_set_t cpu;
     CPU_ZERO(&cpu);
     int n_cpus = get_nprocs();
@@ -160,7 +161,7 @@ void* thread_func(void *ptr) {
         printf("\n");
     }
     
-    block1 = new double[m * m]; 
+    /*block1 = new double[m * m]; 
     inv_block = new double[m * m];
     block2 = new double[m * m]; 
     block3 = new double[m * m];
@@ -172,7 +173,34 @@ void* thread_func(void *ptr) {
         if (block3) delete []block3;
         res[u].err = -4;
         return nullptr;
+    }*/
+    block1 = new double[m*m];
+    if(!block1) {
+        res[u].err = -4;
+        return nullptr;
     }
+    block2 = new double[m*m];
+    if(!block2) {
+        delete []block1;
+        res[u].err = -4;
+        return nullptr;
+    }
+    block3 = new double[m*m];
+    if(!block3) {
+        delete []block1;
+        delete []block2;
+        res[u].err = -4;
+        return nullptr;
+    }
+    inv_block = new double[m*m];
+    if(!inv_block) {
+        delete []block1;
+        delete []block2;
+        delete []block3;
+        res[u].err = -4;
+        return nullptr;
+    }
+
     reduce_sum(p);
     err = errorHandling(u, p, a);
     if(err != 0) {
@@ -217,7 +245,7 @@ void* thread_func(void *ptr) {
             if ((fabs(res[i].minnorm) - fabs(minnorm) < EPS * matrixnorm || indmin == -1) && res[i].ind != -1) {
                 minnorm = res[i].minnorm;
                 indmin = res[i].ind;
-                inv_block = res[i].invblock;
+                inv_block1 = res[i].invblock;
                 //for(j = 0; j < m * m; j++)
                 //    invblock[j] = res[i].invblock[j];
             }
@@ -233,7 +261,7 @@ void* thread_func(void *ptr) {
         }
         change_row_matrix(j, indmin, n, m, k, l, p, u, A, B, block1, block2);
         reduce_sum(p);
-        if(!(solution(matrixnorm, A, B, X, block1, block2, inv_block, block3, n, m, k, l, u, p, j))) {
+        if(!(solution(matrixnorm, A, B, X, block1, block2, inv_block1, block3, n, m, k, l, u, p, j))) {
             res[u].err = -1;
             delete [] block1;
             delete [] block2;
@@ -253,7 +281,7 @@ void* thread_func(void *ptr) {
         return nullptr;
     }
     if (l > 0) {
-        if (!(solution(matrixnorm, A, B, X, block1, block2, inv_block, block3, n, m, k, l, u, p, j))) {
+        if (!(solution(matrixnorm, A, B, X, block1, block2, inv_block1, block3, n, m, k, l, u, p, j))) {
             res[u].err = -1;
             delete [] block1;
             delete [] block2;
@@ -282,7 +310,6 @@ void* thread_func(void *ptr) {
         }
         reduce_sum(p);
     }
-
     /*if (u == 0) {
         printf("A = \n");
         printMatrix(r, n, n, matrix);
@@ -331,10 +358,10 @@ void* thread_func(void *ptr) {
         printf("\n");
         printf ("%s : Task = %d Res1 = %e Res2 = %e T1 = %.2f T2 = %.2f S = %d N = %d M = %d P = %d\n", "./a.out", task, r1, r2, t1, t2, s, n, m, p);
     }
-    delete [] block1;
-    delete [] block2;
-    delete [] block3;
-    delete [] inv_block;
+    delete []block1;
+    delete []block2;
+    delete []block3;
+    delete []inv_block;
     return nullptr;
 }
 void get_block(int i, int j, int n, int m, int k, int l, double *A, double *block){
