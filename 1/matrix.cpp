@@ -151,13 +151,13 @@ void* thread_func(void *ptr) {
         return nullptr;
     }
     initialization_B(A, B, n, m, u, p);
-    reduce_sum(p);
+    //reduce_sum(p);
     initialization_X(X, n, m, u, p);
     reduce_sum(p);
 
     if (u == 0) {
         printf("A = \n");
-        print_matrix(A, n, m, r);
+        print_matrix(A, n, n, r);
         printf("\n");
     }
     
@@ -209,7 +209,10 @@ void* thread_func(void *ptr) {
         }
         return nullptr;
     }
-
+    init_block0(m, m, inv_block);
+    init_block0(m, m, block1);
+    init_block0(m, m, block2);
+    init_block0(m, m, block3);
     for(i = 0; i < n; i++) {
         norm_matrix(A, &res[u].norm, i, u, p, n);
         reduce_sum(p);
@@ -246,8 +249,6 @@ void* thread_func(void *ptr) {
                 minnorm = res[i].minnorm;
                 indmin = res[i].ind;
                 inv_block1 = res[i].invblock;
-                //for(j = 0; j < m * m; j++)
-                //    invblock[j] = res[i].invblock[j];
             }
         }        
                 
@@ -261,7 +262,7 @@ void* thread_func(void *ptr) {
         }
         change_row_matrix(j, indmin, n, m, k, l, p, u, A, B, block1, block2);
         reduce_sum(p);
-        if(!(solution(matrixnorm, A, B, X, block1, block2, inv_block1, block3, n, m, k, l, u, p, j))) {
+        if(!(solution(matrixnorm, A, B, block1, block2, inv_block1, block3, n, m, k, l, u, p, j))) {
             res[u].err = -1;
             delete [] block1;
             delete [] block2;
@@ -281,7 +282,7 @@ void* thread_func(void *ptr) {
         return nullptr;
     }
     if (l > 0) {
-        if (!(solution(matrixnorm, A, B, X, block1, block2, inv_block1, block3, n, m, k, l, u, p, j))) {
+        if (!(solution(matrixnorm, A, B, block1, block2, inv_block1, block3, n, m, k, l, u, p, j))) {
             res[u].err = -1;
             delete [] block1;
             delete [] block2;
@@ -298,8 +299,7 @@ void* thread_func(void *ptr) {
         }
     }
     a -> t_cpu = get_full_time() - t_cpu;
-    a -> t_tot = get_full_time() - t_tot;    
-    if (l == 0) {
+    a -> t_tot = get_full_time() - t_tot;   
         if(u == 0) {
             for (int i = n - 1; i >= 0; --i){
                 tmp = B[i];
@@ -309,7 +309,6 @@ void* thread_func(void *ptr) {
             }
         }
         reduce_sum(p);
-    }
     /*if (u == 0) {
         printf("A = \n");
         printMatrix(r, n, n, matrix);
@@ -402,6 +401,12 @@ void put_block_b(int i, int m, int k, int l, double *b, double *block) {
 }
 double fabs(double a) {
     return (a > 0 ? a : -a);
+}
+void init_block0(int n, int m, double *block) {
+    int i = 0, j = 0;
+    for(i = 0; i < n; i++)
+        for(j = 0; j < m; j++)
+            block[i * m + j] = 0;
 }
 int read_matrix(FILE* inp, double* A, int n){
     int i;
@@ -820,8 +825,8 @@ void substract_block(double *block1, double *block2, int n, int m) {
         }
     }
 }*/
-int solution(double normmatrix, double* A, double* B, double *X, double* block1, double* block2, double* inv_block, double* block3, int n, int m, int k, int l, int u, int p, int s) {
-    double tmp = 0.;
+int solution(double normmatrix, double* A, double* B, double* block1, double* block2, double* inv_block, double* block3, int n, int m, int k, int l, int u, int p, int s) {
+    //double tmp = 0.;
     if(s < k) {
         for(int i1 = s + u; i1 < k + 1; i1 += p) {
             if (l > 0 && i1 == k) {
@@ -889,7 +894,10 @@ int solution(double normmatrix, double* A, double* B, double *X, double* block1,
     }
     if(l > 0 && s == k) {
         get_block(k, k, n, m, k, l, A, block1);
-        if (inverse_block(normmatrix, block1, inv_block, l) == -1) return -1;
+        if (inverse_block(normmatrix, block1, inv_block, l) == -1) {
+            reduce_sum(p);
+            return -1;
+        }
         if(u == 0) {
             get_block(k, k, n, m, k, l, A, block1);
             mult_blocks(inv_block, block1, block3, l, l, l);
@@ -900,6 +908,7 @@ int solution(double normmatrix, double* A, double* B, double *X, double* block1,
             put_block_b(k, m, k, l, B, block2);
         }
     }
+    /*reduce_sum(p);
     if(u == 0) {
     for (int i = n - 1; i >= 0; --i)
 	{
@@ -908,7 +917,7 @@ int solution(double normmatrix, double* A, double* B, double *X, double* block1,
 			tmp -= A[i * n + j] * X[j];
 		X[i] = tmp;
 	}
-    }
+    }*/
     
     reduce_sum(p);
     return 1;
