@@ -103,31 +103,6 @@ int main(int argc, char *argv[]) {
         pthread_join(args[u].t_id, 0);
     }
 
-    /*printf("_____________________________________________________\n A\n");
-    printMatrix(r, n, n, a);*/
-
-    /*if (res == 0) {
-        printf("_____________________________________________________\n");
-        printf("               METHOD CANNOT BE USED!!!\n");
-        printf("_____________________________________________________\n");
-    }*/
-    /*if (g_r.err < 0)
-        switch (g_r.err) {
-        case -1:
-            printf ("%s : Task = %d Res1 = %e Res2 = %e T1 = %.2f T2 = %.2f S = %d N = %d M = %d P = %d\n", argv[0], task, -1., -1., 0., 0., s, n, m, p);
-            break;
-        case -2:
-            printf("COULD NOT OPEN FILE %s!\n", name);
-            break;
-        case -3:
-            printf("COULD NOT READ FILE %s!\n", name);
-            break;
-        case -4:
-            printf("NOT ENOUGH MEMORY %s!\n", name);
-            break;
-        default:
-            break;
-        }*/
     if (g_r.err < 0) printf ("%s : Task = %d Res1 = %e Res2 = %e T1 = %.2f T2 = %.2f S = %d N = %d M = %d P = %d\n", argv[0], 9, -1., -1., 0., 0., s, n, m, p);
 
     delete []A;
