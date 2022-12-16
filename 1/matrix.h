@@ -52,6 +52,7 @@ class Args {
         ~Args() = default;
 };
 double fabs(double a);
+void init_block0(int n, int m, double *block);
 void reduce_sum(int p, int *a = nullptr, int n = 0);
 double get_full_time();
 void normB(double *b, double *norm, int n, int u, int p);
@@ -81,4 +82,4 @@ int ind_of_min_matrix(double normmatrix, int j, double* A,double* block1, double
 void change_row_matrix(int i1, int i2, int n, int m, int k, int l, int p, int u, double* A, double* B, double* block1, double* block2);
 //void mult_blocks(double *a, double *b, double *res, int m2, int m1, int m3, int m);
 void mult_blocks(double *block1, double *block2, double *resblock, int n, int m1, int m2);//block1{m1*n} * block2{n*m2}
-int solution(double normmatrix, double* A, double* B, double *X, double* block1, double* block2, double* inv_block, double* block3, int n, int m, int k, int l, int u, int p, int s);
+int solution(double normmatrix, double* A, double* B, double* block1, double* block2, double* inv_block, double* block3, int n, int m, int k, int l, int u, int p, int s);
