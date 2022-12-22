@@ -155,7 +155,7 @@ void* thread_func(void *ptr) {
     //reduce_sum(p);
     initialization_X(X, n, m, u, p);
     reduce_sum(p);
-
+    printf("мы здесь");
     if (u == 0) {
         printf("A = \n");
         print_matrix(A, n, n, r);
@@ -698,7 +698,7 @@ int inverse_block(double matrixnorm, double *block, double *block1, int m) {
             change_row_block(k, indmax, m, block1);
         }
         
-        if (fabs(block[k * m + k]) < EPS * matrixnorm || fabs(block[k*m + k]) < EPS) {
+        if (fabs(block[k * m + k]) < EPS * matrixnorm ) {
             return -1;
         }
         mult = 1 / block[k * m + k];
