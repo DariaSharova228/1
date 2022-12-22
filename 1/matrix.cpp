@@ -87,6 +87,7 @@ void* thread_func(void *ptr) {
     double *X = a -> X;
     Results *res = a -> res;
     Global_results *g_r = a -> global_res;
+    char * argv_0 = a -> argv_0;
     int p = a -> p;
     int u = a -> u;
     int k = a -> k;
@@ -262,7 +263,7 @@ void* thread_func(void *ptr) {
         }
         change_row_matrix(j, indmin, n, m, k, l, p, u, A, B, block1, block2);
         reduce_sum(p);
-        if(!(solution(matrixnorm, A, B, block1, block2, inv_block1, block3, n, m, k, l, u, p, j))) {
+        if(solution(matrixnorm, A, B, block1, block2, inv_block1, block3, n, m, k, l, u, p, j) == -1) {
             res[u].err = -1;
             delete [] block1;
             delete [] block2;
@@ -282,7 +283,7 @@ void* thread_func(void *ptr) {
         return nullptr;
     }
     if (l > 0) {
-        if (!(solution(matrixnorm, A, B, block1, block2, inv_block1, block3, n, m, k, l, u, p, j))) {
+        if (solution(matrixnorm, A, B, block1, block2, inv_block1, block3, n, m, k, l, u, p, j) == -1) {
             res[u].err = -1;
             delete [] block1;
             delete [] block2;
@@ -298,6 +299,11 @@ void* thread_func(void *ptr) {
             return nullptr;
         }
     }
+    if (u == 0) {
+        printf("A = \n");
+        print_matrix(A, n, n, r);
+        printf("\n");
+    }
     a -> t_cpu = get_full_time() - t_cpu;
     a -> t_tot = get_full_time() - t_tot;   
         if(u == 0) {
@@ -309,11 +315,7 @@ void* thread_func(void *ptr) {
             }
         }
         reduce_sum(p);
-    /*if (u == 0) {
-        printf("A = \n");
-        printMatrix(r, n, n, matrix);
-        printf("\n");
-    }*/
+    
     if (name) {
         if (u == 0) {
             inp = fopen(name, "r");
@@ -355,7 +357,7 @@ void* thread_func(void *ptr) {
         printf("x = \n");
         print_matrix(X, n, 1, r);
         printf("\n");
-        printf ("%s : Task = %d Res1 = %e Res2 = %e T1 = %.2f T2 = %.2f S = %d N = %d M = %d P = %d\n", "./a.out", task, r1, r2, t1, t2, s, n, m, p);
+        printf ("%s : Task = %d Res1 = %e Res2 = %e T1 = %.2f T2 = %.2f S = %d N = %d M = %d P = %d\n", argv_0, task, r1, r2, t1, t2, s, n, m, p);
     }
     delete []block1;
     delete []block2;
@@ -550,7 +552,6 @@ double norm_block(double* block, double normmatrix, int m) {
     double res = 0, bnorm = 0, s0 = 0, s1 = 0, s2 = 0;
     double matrixnorm = norm_matrix(A, n);
     double *m = nullptr;
-
     int n3 = n - n % 3;
     for(i = 0; i < n3; i += 3) {
         bnorm += fabs(B[i]) + fabs(B[i + 1]) + fabs(B[i + 2]);
@@ -572,11 +573,9 @@ double norm_block(double* block, double normmatrix, int m) {
         }
         
         res += fabs(s0 - B[i]) + fabs(s1 - B[i + 1]) + fabs(s2 - B[i + 2]);
-
     }
     for(i = n3; i < n; i++) {
         bnorm += fabs(B[i]);
-
         s0 = 0; 
         m = A + i * n;
         for(j = 0; j < n3; j += 3) 
@@ -698,8 +697,10 @@ int inverse_block(double matrixnorm, double *block, double *block1, int m) {
             change_row_block(k, indmax, m, block);
             change_row_block(k, indmax, m, block1);
         }
-
-        if (fabs(block[k * m + k]) < EPS * matrixnorm) return -1;
+        
+        if (fabs(block[k * m + k]) < EPS * matrixnorm || fabs(block[k*m + k]) < EPS) {
+            return -1;
+        }
         mult = 1 / block[k * m + k];
 
         for(i = k; i < m; i++) 
@@ -929,112 +930,3 @@ void normB(double *b, double *norm, int n, int u, int p) {
         res += fabs(b[i]);
     *norm += res;
 }
-/*int solution(double* A, double* B, double *X, double* block1, double* block2, double* inv_block, double* block3, int n, int m, int k, int l, int u, int p, int s){
-    int p;
-    double tmp = 0.;
-    //double s = 0.;
-    //double curr_norm;
-    int min_norm_i;
-    double normmatrix = norm_matrix(A, n);
-    for( p = 0; p < k; p++){//шаг
-    min_norm_i = ind_of_min_matrix(normmatrix, p, A, block1, block2, inv_block, n, m, k, l);
-    if (min_norm_i == -1) return -1;
-    change_row_matrix(p, min_norm_i, n, m, k, l, A, block1, block2, B);
-    for(int i1 = p; i1 < k; i1++) {                                
-            get_block(p, i1, n, m, k, l, A, block1);    
-            mult_blocks(inv_block, block1, block2, m, m, m);
-            put_block(p, i1, n, m, k, l, A, block2);
-            //clean_block(block1, m);
-            //clean_block(block2, m);
-    }
-        if (l != 0) { //m x l
-            get_block(p, k, n, m, k, l, A, block1);   
-            mult_blocks(inv_block, block1, block2, m, m, l);
-            put_block(p, k, n, m, k, l, A, block2);
-            //clean_block(block1, m);
-            //clean_block(block2, m);
-            
-        }
-        get_block_b(p, m, k, l, B, block1);
-        mult_blocks(inv_block, block1, block2, m, m, 1);
-        put_block_b(p, m, k, l, B, block2);
-        //clean_block(block1, m);
-        //clean_block(block2, m);
-        for(int i = p + 1; i < k; i++) {
-            get_block(i, p, n, m, k, l, A, block1);
-            for(int j = p; j < k; j++) {
-                get_block(p, j, n, m, k, l, A, block2);
-                mult_blocks(block1, block2, block3, m, m, m);
-                get_block(i, j, n, m, k, l, A, block2);
-                substract_block(block2, block3, m, m);
-                put_block(i, j, n, m, k, l, A, block2);
-                //clean_block(block2, m);
-                //clean_block(block3, m);
-            }
-            if(l != 0) { //m*l
-                get_block(p, k, n, m, k, l, A, block2);
-                mult_blocks(block1, block2, block3, m, m, l);
-                get_block(i, k, n, m, k, l, A, block2);
-                substract_block(block2, block3, m, l);
-                put_block(i, k, n, m, k, l, A, block2);
-                //clean_block(block2, m);
-                //clean_block(block3, m);
-            }
-            get_block_b(p, m, k, l, B, block2);
-            mult_blocks(block1, block2, block3, m, m, 1);
-            //clean_block(block2, m);
-            get_block_b(i, m, k, l, B, block2);
-            substract_block(block2, block3, m, 1);
-            put_block_b(i, m, k, l, B, block2);
-            //clean_block(block2, m);
-            //clean_block(block3, m);
-        }
-        //clean_block(block1, m);
-        if (l > 0) { //l x m
-            get_block(k, p, n, m, k, l, A, block1);  // l*m      
-            for(int j = p; j < k; j++){
-                get_block(p, j, n, m, k, l, A, block2);
-                mult_blocks(block1, block2, block3, m, l, m);
-                get_block(k, j, n, m, k, l, A, block2);     
-                substract_block(block2, block3, l, m);
-                put_block(k, j, n, m, k, l, A, block2);
-                //clean_block(block2, m);
-                //clean_block(block3, m);
-            }
-            get_block(p, k, n, m, k, l, A, block2);
-            mult_blocks(block1, block2, block3, m, l, l);
-            get_block(k, k, n, m, k, l, A, block2);        
-            substract_block(block2, block3, l, l);
-            put_block(k, k, n, m, k, l, A, block2);
-           //clean_block(block2, m);
-            //clean_block(block3, m);
-            get_block_b(p, m, k, l, B, block2);
-            mult_blocks(block1, block2, block3, m, l, 1);
-            get_block_b(k, m, k, l, B, block2);
-            substract_block(block2, block3, l, 1);
-            put_block_b(k, m, k, l, B, block2);
-            //clean_block(block2, m);
-            //clean_block(block3, m);
-            //clean_block(block1, m);
-        }
-    }
-    if(l > 0) {
-        get_block(k, k, n, m, k, l, A, block1);
-        if (inverse_block(normmatrix, block1, inv_block, l) == -1) return -1;
-        get_block(k, k, n, m, k, l, A, block1);
-        mult_blocks(inv_block, block1, block3, l, l, l);
-        put_block(k, k, n, m, k, l, A, block3);
-
-        get_block_b(k, m, k, l, B, block1);
-        mult_blocks(inv_block, block1, block2, l, l, 1);
-        put_block_b(k, m, k, l, B, block2);
-    }
-    for (int i = n - 1; i >= 0; --i)
-	{
-		tmp = B[i];
-		for (int j = i + 1; j < n; ++j)
-			tmp -= A[i * n + j] * X[j];
-		X[i] = tmp;
-	}
-    return 1;
-}*/
