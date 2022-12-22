@@ -8,7 +8,6 @@
 #include <sys/time.h>
 #include <sys/resource.h>
 
-#define EPS 1e-16
 
 class Results {
     public:
