@@ -135,9 +135,9 @@ void* thread_func(void *ptr) {
             else {
                 if (read_matrix(inp, A, n) == -1) {
                     res[u].err = -3;
+                    fclose(inp);
                 }
             }
-            fclose(inp);
         }
     }
     else {
@@ -152,10 +152,9 @@ void* thread_func(void *ptr) {
         return nullptr;
     }
     initialization_B(A, B, n, m, u, p);
-    //reduce_sum(p);
+    reduce_sum(p);
     initialization_X(X, n, m, u, p);
     reduce_sum(p);
-    printf("мы здесь");
     if (u == 0) {
         printf("A = \n");
         print_matrix(A, n, n, r);
@@ -299,13 +298,14 @@ void* thread_func(void *ptr) {
             return nullptr;
         }
     }
-    if (u == 0) {
+    /*if (u == 0) {
         printf("A = \n");
         print_matrix(A, n, n, r);
         printf("\n");
-    }
+    }*/
     a -> t_cpu = get_full_time() - t_cpu;
     a -> t_tot = get_full_time() - t_tot;   
+    reduce_sum(p);
         if(u == 0) {
             for (int i = n - 1; i >= 0; --i){
                 tmp = B[i];
@@ -447,7 +447,7 @@ void print_block(double* A, int n1, int n2) {
 double filling_formulas(int s, int n, int i, int j) {
     switch(s) {
         case 1: return ( n - (i > j ? i : j));
-        case 2: return (i < j ? i + 1: j + 1);
+        case 2: return (i > j ? i + 1: j + 1);
         case 3: return(i - j < 0 ? j - i : i - j);
         case 4: return ((1./((double)(i + j + 1))));
         default: return 0.;
@@ -894,20 +894,27 @@ int solution(double normmatrix, double* A, double* B, double* block1, double* bl
         }
     }
     if(l > 0 && s == k) {
-        get_block(k, k, n, m, k, l, A, block1);
-        if (inverse_block(normmatrix, block1, inv_block, l) == -1) {
+        printf("\n");
+        get_block(k, k, n, m, k, l, A, block2);
+        if (inverse_block(normmatrix, block2, inv_block, l) == -1) {
             reduce_sum(p);
             return -1;
         }
+        reduce_sum(p);
         if(u == 0) {
             get_block(k, k, n, m, k, l, A, block1);
+            /*print_matrix(block1, l, l, 5);
+            printf("\n");*/
             mult_blocks(inv_block, block1, block3, l, l, l);
+            /*print_matrix(block3, l, l, 5);
+            printf("\n");*/
             put_block(k, k, n, m, k, l, A, block3);
 
             get_block_b(k, m, k, l, B, block1);
             mult_blocks(inv_block, block1, block2, l, l, 1);
             put_block_b(k, m, k, l, B, block2);
         }
+        reduce_sum(p);
     }
     /*reduce_sum(p);
     if(u == 0) {
